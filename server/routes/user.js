@@ -9,12 +9,13 @@ app.get('/usuario', function (req, res) {
     //Se crea la consulta donde. 
     let desde = req.query.desde || 0;
     desde = Number(desde);
-
+    //Se crea el limite a la consulta
     let limite = req.query.limite || 5;
     limite = Number(limite);
+ 
 
     // Se crea la condicion para mostar los datos deseados.
-    Usuario.find({}, 'nombre email role estado google img')
+    Usuario.find({estado: true}, `nombre email role estado google img`)
             .skip(desde)
             .limit(limite)
             .exec((err,usuarios) => {
@@ -24,7 +25,7 @@ app.get('/usuario', function (req, res) {
                         err
                     });
                 }
-                Usuario.countDocuments({}, (err, conteo) => {
+                Usuario.countDocuments({estado: true}, (err, conteo) => {
                     res.json({
                         ok:true,
                         usuarios,
@@ -84,8 +85,10 @@ app.put('/usuario/:id', function (req, res) {
 app.delete('/usuario/:id', function (req, res) {
                        //Corresponde al id del URL.
     let id = req.params.id;
-
-    Usuario.findByIdAndRemove(id,(err, usuarioEliminado)=> {
+    let cambioEstado = {
+        estado: false
+    }
+    Usuario.findByIdAndUpdate(id,cambioEstado,{new: true, runValidators:true}, (err, usuarioEliminado)=> {
         if(err){
             return res.status(400).json({
                 ok:false,
