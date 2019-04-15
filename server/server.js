@@ -16,6 +16,7 @@ app.use(bodyParser.json())
 app.use( require ('./routes/user') )
 
 //Se realiza la conexion a la DB
+mongoose.set('useCreateIndex', true)
 mongoose.connect('mongodb://localhost:27017/cafe', {useNewUrlParser: true}, (err,res) => {
 
 if(err) throw err;

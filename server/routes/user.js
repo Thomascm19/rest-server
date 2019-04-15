@@ -6,13 +6,15 @@ const Usuario = require('../models/modelUser');
 
 app.get('/usuario', function (req, res) {
     
+    //Se crea la consulta donde. 
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
     let limite = req.query.limite || 5;
     limite = Number(limite);
-    
-    Usuario.find({})
+
+    // Se crea la condicion para mostar los datos deseados.
+    Usuario.find({}, 'nombre email role estado google img')
             .skip(desde)
             .limit(limite)
             .exec((err,usuarios) => {
@@ -22,12 +24,14 @@ app.get('/usuario', function (req, res) {
                         err
                     });
                 }
-                res.json({
-                    ok:true,
-                    usuarios
-                });
+                Usuario.countDocuments({}, (err, conteo) => {
+                    res.json({
+                        ok:true,
+                        usuarios,
+                        cuantos: conteo
+                    });
+                })                
             })
-
 })
 
 
@@ -77,8 +81,30 @@ app.put('/usuario/:id', function (req, res) {
         })
     })    
 })
-app.delete('/usuario', function (req, res) {
-    res.json('delete Usuario')
+app.delete('/usuario/:id', function (req, res) {
+                       //Corresponde al id del URL.
+    let id = req.params.id;
+
+    Usuario.findByIdAndRemove(id,(err, usuarioEliminado)=> {
+        if(err){
+            return res.status(400).json({
+                ok:false,
+                err
+            });                                       
+        };
+        if(!usuarioEliminado){
+            return res.status(400).json({
+                ok:false,
+                err: {
+                    message: 'Usuario no encontrado'
+                }
+            });
+        }
+        res.json({
+            ok:true,
+            usuario: usuarioEliminado
+        })
+    })
 })
 
 module.exports = app;
